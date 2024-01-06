@@ -1,7 +1,7 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { signin, signup } from './dto/auth.dto';
-import { Request } from 'express';
+import { nguoi_dung } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -9,33 +9,21 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('/signup')
-  signUp(@Req() req: Request) {
+  signUp(@Body() registerUser: signup): Promise<nguoi_dung> {
     try {
-      let { email, pass_word, name, phone, birth_day, gender } = req.body;
-      return this.authService.signup(email, pass_word, name, phone, birth_day, gender)
+      return this.authService.signup(registerUser)
     } catch (exception) {
-      if (exception.status != 500) {
-        throw new HttpException(exception.response, exception.status)
-      }
-      throw new HttpException("Lỗi...", HttpStatus.INTERNAL_SERVER_ERROR)
+      throw new HttpException(exception.response, exception.status)
     }
-
-
   }
 
   @HttpCode(200)
   @Post('/signin')
-  signin(@Req() req: Request) {
+  signin(@Body() LoginUser: signin): Promise<any> {
     try {
-      let { email, pass_word } = req.body;
-      return this.authService.signin(email, pass_word)
+      return this.authService.signin(LoginUser)
     } catch (exception) {
-      if (exception.status != 500) {
-        throw new HttpException(exception.response, exception.status)
-      }
-      throw new HttpException("Lỗi...", HttpStatus.INTERNAL_SERVER_ERROR)
+      throw new HttpException(exception.response, exception.status)
     }
-
   }
-
 }

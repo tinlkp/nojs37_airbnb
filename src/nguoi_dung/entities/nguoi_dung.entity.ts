@@ -12,3 +12,14 @@ export type nguoi_dung = {
     role: string,
     avatar: string,
 }
+
+export type Avatar = {
+    fieldname: string,
+    originalname: string,
+    encoding: string,
+    mimetype: string,
+    destination: string,
+    filename: string,
+    path: string,
+    size: number
+}

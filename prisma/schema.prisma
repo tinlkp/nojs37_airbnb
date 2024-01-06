@@ -44,7 +44,6 @@ model nguoi_dung {
   birth_day String?     @db.VarChar(255)
   gender    String?     @db.VarChar(255)
   role      String?     @db.VarChar(255)
-  avatar    String?     @db.VarChar(255)
   binh_luan binh_luan[]
   dat_phong dat_phong[]
 }
@@ -68,6 +67,7 @@ model phong {
   ban_ui    Boolean?
   hinh_anh  String?     @db.VarChar(255)
   ma_vi_tri Int?
+  ban_la    Boolean?
   binh_luan binh_luan[]
   dat_phong dat_phong[]
   vi_tri    vi_tri?     @relation(fields: [ma_vi_tri], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "phong_ibfk_1")
