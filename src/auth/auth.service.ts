@@ -3,6 +3,7 @@ import { PrismaClient, nguoi_dung } from '@prisma/client';
 import { signin, signup } from './dto/auth.dto';
 import { JwtService } from "@nestjs/jwt"
 import * as bcrypt from "bcrypt"
+import hashSync from 'src/config/bcryptPassword';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
             throw new HttpException("Email đã tồn tại !!!", HttpStatus.BAD_REQUEST)
         }
         let { email, pass_word, name, phone, birth_day, gender } = registerUser;
-        const hashPassword = await this.hashSync(pass_word)
+        const hashPassword = await hashSync(pass_word)
         const user = await this.prisma.nguoi_dung.create({
             data: {
                 email,
@@ -35,12 +36,7 @@ export class AuthService {
         })
         return user
     }
-    private async hashSync(pass_word: string) {
-        const saltRounds = 10;
-        const salt = await bcrypt.genSalt(saltRounds);
-        const hash = await bcrypt.hash(pass_word, salt)
-        return hash
-    }
+
 
     async signin(LoginUser: signin): Promise<any> {
         const checkEmailUser = await this.prisma.nguoi_dung.findFirst({

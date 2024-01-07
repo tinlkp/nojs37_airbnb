@@ -1,10 +1,10 @@
-import compress_images from "compress-images";
-import fs from "fs";
+import * as compressImages from 'compress-images';
+import * as fs from "fs";
 
-export const compressImageAvatar = (file: Express.Multer.File) => {
-    compress_images(
+export const compressImage = async (file: Express.Multer.File, adress: string) => {
+    await compressImages(
         process.cwd() + "/public/img/" + file.filename,
-        process.cwd() + "/public/img/imgAvatar/",
+        process.cwd() + adress,
         { compress_force: false, statistic: true, autoupdate: true },
         false,
         { jpg: { engine: "mozjpeg", command: ["-quality", "10"] } },
@@ -16,16 +16,18 @@ export const compressImageAvatar = (file: Express.Multer.File) => {
                 command: ["--colors", "64", "--use-col=web"],
             },
         },
-        function (error, completed, statistic) {
+        function (error, completed: any, statistic) {
             // nếu thành công thì xóa ảnh chưa được tối ưu đi
-            console.log(error);
             if (completed) {
-                const imgUnOptimized =
-                    process.cwd() + "/public/img/" + file.filename;
+                const imgUnOptimized = process.cwd() + "/public/img/" + file.filename;
                 fs.unlink(imgUnOptimized, (err) => {
                     console.log(err);
                 });
             }
         }
     );
+    return file
 }
+
+
+

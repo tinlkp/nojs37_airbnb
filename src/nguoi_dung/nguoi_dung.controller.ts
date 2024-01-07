@@ -1,13 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, Req, Put, HttpCode, HttpException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, Req, Put, HttpCode, HttpException, Query, Headers } from '@nestjs/common';
 import { NguoiDungService } from './nguoi_dung.service';
-import { CreateNguoiDungDto, create_nguoi_dung } from './dto/create-nguoi_dung.dto';
-import { UpdateNguoiDungDto } from './dto/update-nguoi_dung.dto';
-import { nguoi_dung } from '@prisma/client';
+import { create_nguoi_dung } from './dto/create-nguoi_dung.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import upload from "../config/UploadImg"
 import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { nguoi_dung } from '@prisma/client';
 
 @Controller('users')
 export class NguoiDungController {
@@ -34,9 +32,8 @@ export class NguoiDungController {
   @HttpCode(200)
   @UseInterceptors(FileInterceptor("file", upload))
   @Post('/upload-avatar')
-  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Headers('token') token: string) {
     try {
-      let token = req.headers.token
       return this.nguoiDungService.uploadAvatar(token, file)
     } catch (exception) {
       throw new HttpException(exception.response, exception.status)
@@ -64,6 +61,9 @@ export class NguoiDungController {
     }
   }
 
+  // pageIndex là số trang,
+  // pageSize là số người dùng trong 1 trang, 
+  // keyword là tên của người dùng
   @HttpCode(200)
   @Get('/get-page-user')
   getUserPage(@Query("pageIndex") pageIndex: number, @Query("pageSize") pageSize: number, @Query("keyword") keyword: string) {

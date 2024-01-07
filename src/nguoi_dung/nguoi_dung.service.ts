@@ -1,12 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateNguoiDungDto, create_nguoi_dung } from './dto/create-nguoi_dung.dto';
-import { UpdateNguoiDungDto } from './dto/update-nguoi_dung.dto';
+import { create_nguoi_dung } from './dto/create-nguoi_dung.dto';
 import { PrismaClient, nguoi_dung } from '@prisma/client';
-import compress_images from "compress-images";
-import fs from "fs"
 import { JwtService } from '@nestjs/jwt';
 import hashSync from "../config/bcryptPassword"
-import { compressImageAvatar } from 'src/config/compressImage';
+import { compressImage } from 'src/config/compressImage';
+import { nguoi_dung_id } from './entities/nguoi_dung.entity';
 
 @Injectable()
 export class NguoiDungService {
@@ -28,6 +26,7 @@ export class NguoiDungService {
     })
     return data;
   }
+
   async detailUser(id: number): Promise<nguoi_dung> {
     let user = await this.prisma.nguoi_dung.findFirst({
       where: {
@@ -38,19 +37,18 @@ export class NguoiDungService {
 
   };
 
-  async uploadAvatar(token: any, file: Express.Multer.File) {
+  async uploadAvatar(token: string, file: Express.Multer.File): Promise<nguoi_dung_id> {
     const decodeToken = await this.JwtService.decode(token)
-    // const imageAvatar = compressImageAvatar(file)
-    // const getUser = await this.prisma.nguoi_dung.findFirst({
-    //   where: {
-    //     id: decodeToken.data.id
-    //   }
-    // })
-
-    return file
+    const userImage = await compressImage(file, "/public/imgAvatar/")
+    const upAvatar = await this.prisma.nguoi_dung.update({
+      where: {
+        id: decodeToken.data.id
+      }, data: {
+        avatar: userImage.filename
+      }
+    })
+    return upAvatar
   }
-
-
 
   async createUser(createUser: nguoi_dung) {
     let checkEmail = await this.prisma.nguoi_dung.findFirst({
@@ -103,12 +101,13 @@ export class NguoiDungService {
   async getUserPage(pageIndex: number, pageSize: number, keyword: string) {
 
     const result = await this.prisma.nguoi_dung.findMany({
-      take: pageSize,
       where: {
         name: {
           contains: keyword
         }
-      }
+      },
+      take: pageSize,
+      skip: pageIndex - 1
     })
     return result
   }

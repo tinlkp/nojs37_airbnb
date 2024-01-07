@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaClient, phong } from '@prisma/client';
 import { phong_dto } from './dto/phong.dto';
+import { compressImage } from 'src/config/compressImage';
 
 
 @Injectable()
@@ -43,9 +44,17 @@ export class PhongService {
         return data
     }
 
-    async findRoomPage() {
-
-
+    async findRoomPage(pageIndex: number, pageSize: number, keyword: string) {
+        const result = await this.prisma.phong.findMany({
+            where: {
+                ten_phong: {
+                    contains: keyword
+                }
+            },
+            take: pageSize,
+            skip: pageIndex - 1
+        })
+        return result
     }
 
     async roomDetail(id: number) {
@@ -112,7 +121,32 @@ export class PhongService {
         return deleteR
     }
 
-    async uploadImgRoom() {
-
+    async uploadImgRoom(token: string, id: number, file: Express.Multer.File) {
+        const decodeToken = await this.JwtService.decode(token)
+        const imgRoom = await compressImage(file, "/public/imgRoom/")
+        const checkUser = await this.prisma.nguoi_dung.findFirst({
+            where: {
+                id: decodeToken.data.id
+            }
+        })
+        if (checkUser.role === "USER") {
+            throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
+        }
+        const checkRoom = await this.prisma.phong.findFirst({
+            where: {
+                id
+            }
+        })
+        if (!checkRoom) {
+            throw new HttpException("Phòng không tồn tại !!!", HttpStatus.UNAUTHORIZED)
+        }
+        let uploadImg = await this.prisma.phong.update({
+            where: {
+                id
+            }, data: {
+                hinh_anh: imgRoom.filename
+            }
+        })
+        return uploadImg
     }
 }

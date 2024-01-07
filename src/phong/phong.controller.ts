@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Headers, HttpCode, HttpException, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, HttpCode, HttpException, Param, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { PhongService } from './phong.service';
 import { phong } from '@prisma/client';
 import { phong_dto } from './dto/phong.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import upload from 'src/config/UploadImg';
 
 @Controller('phong')
 export class PhongController {
@@ -62,4 +64,25 @@ export class PhongController {
       throw new HttpException(exception.response, exception.status)
     }
   }
+
+  // pageIndex là số trang, 
+  // pageSize là số phòng trong 1 trang,
+  // keyword là tên của phòng
+  @HttpCode(200)
+  @Get('get-room-page')
+  findRoomPage(@Query("pageIndex") pageIndex: number, @Query("pageSize") pageSize: number, @Query("keyword") keyword: string) {
+    return this.phongService.findRoomPage(+pageIndex, +pageSize, keyword)
+  }
+
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor("file", upload))
+  @Post('upload-img-room/:id')
+  uploadImgRoom(@Headers('token') token: string, @Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
+    try {
+      return this.phongService.uploadImgRoom(token, +id, file)
+    } catch (exception) {
+      throw new HttpException(exception.response, exception.status)
+    }
+  }
+
 }

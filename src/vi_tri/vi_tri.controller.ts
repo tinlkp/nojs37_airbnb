@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Headers, HttpCode, HttpException, Param, Post, Put, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, HttpCode, HttpException, Param, Post, Put, Query, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ViTriService } from './vi_tri.service';
 import { vi_tri } from '@prisma/client';
 import { vi_tri_dto } from './dto/vi_tri.dto';
 import { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import upload from 'src/config/UploadImg';
 
 @Controller('vi-tri')
 export class ViTriController {
@@ -46,6 +48,26 @@ export class ViTriController {
   deleteLocation(@Param('id') id: number, @Headers('token') token: string) {
     try {
       return this.viTriService.deleteLocation(+id, token)
+    } catch (exception) {
+      throw new HttpException(exception.response, exception.status)
+    }
+  }
+
+  // pageIndex là số trang, 
+  // pageSize là số vị trí trong 1 trang, 
+  // keyword là tên vị trí
+  @HttpCode(200)
+  @Get('get-location-page')
+  findLocationPage(@Query("pageIndex") pageIndex: number, @Query("pageSize") pageSize: number, @Query("keyword") keyword: string) {
+    return this.viTriService.findLocationPage(+pageIndex, +pageSize, keyword)
+  }
+
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor("file", upload))
+  @Post('upload-img-location/:idViTri')
+  uploadHinhViTri(@Param('idViTri') id: number, @UploadedFile() file: Express.Multer.File, @Headers('token') token: string) {
+    try {
+      return this.viTriService.uploadHinhViTri(+id, file, token)
     } catch (exception) {
       throw new HttpException(exception.response, exception.status)
     }
