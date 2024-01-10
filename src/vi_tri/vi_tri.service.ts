@@ -2,7 +2,10 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaClient, vi_tri } from '@prisma/client';
 import { vi_tri_dto } from './dto/vi_tri.dto';
-import { compressImage } from 'src/config/compressImage';
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import { initializeApp } from "firebase/app";
+import config from '../config/firebase.config'
+import * as fs from "fs";
 
 @Injectable()
 export class ViTriService {
@@ -112,10 +115,57 @@ export class ViTriService {
         return deleteLocal
     }
 
+
+    // tải ảnh lên folder imgLocation trong máy
+    // async uploadHinhViTri(id: number, file: Express.Multer.File, token: string) {
+    //     const decodeToken = await this.JwtService.decode(token)
+
+    //     const checkUser = await this.prisma.nguoi_dung.findFirst({
+    //         where: {
+    //             id: decodeToken.data.id
+    //         }
+    //     })
+    //     if (checkUser.role === "USER") {
+    //         throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
+    //     }
+    //     const checkLocation = await this.prisma.vi_tri.findFirst({
+    //         where: {
+    //             id
+    //         }
+    //     })
+    //     if (!checkLocation) {
+    //         throw new HttpException("Vị trí không tồn tại!!!", HttpStatus.UNAUTHORIZED)
+    //     }
+    //     const uploadImg = await this.prisma.vi_tri.update({
+    //         where: {
+    //             id
+    //         }, data: {
+    //             hinh_anh: file.filename
+    //         }
+    //     })
+
+    //     return uploadImg
+    // }
+
+    // tải ảnh lên firebase
     async uploadHinhViTri(id: number, file: Express.Multer.File, token: string) {
         const decodeToken = await this.JwtService.decode(token)
-        const localImage = await compressImage(file, "/public/imgLocation/")
-
+        const buffer = fs.readFileSync(file.path)
+        const app = initializeApp(config.firebaseConfig);
+        const storage = getStorage(app, app.options.storageBucket);
+        const storageRef = ref(storage, `imgLocation/${file.filename}`)
+        const metadata = {
+            contentType: file.mimetype,
+        };
+        const snapshot = await uploadBytesResumable(storageRef, buffer.buffer, metadata);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        if (!downloadURL) {
+            throw new HttpException('Lỗi ... ', HttpStatus.BAD_REQUEST)
+        }
+        const imgUnOptimized = process.cwd() + "/public/imgLocation/" + file.filename;
+        fs.unlink(imgUnOptimized, (error) => {
+            console.log(error)
+        })
         const checkUser = await this.prisma.nguoi_dung.findFirst({
             where: {
                 id: decodeToken.data.id
@@ -136,10 +186,11 @@ export class ViTriService {
             where: {
                 id
             }, data: {
-                hinh_anh: localImage.filename
+                hinh_anh: downloadURL
             }
         })
 
         return uploadImg
     }
+
 }

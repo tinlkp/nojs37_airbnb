@@ -4,6 +4,8 @@ import { phong } from '@prisma/client';
 import { phong_dto } from './dto/phong.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import upload from 'src/config/UploadImg';
+import { diskStorage } from 'multer';
+import { compressImage } from 'src/config/compressImage';
 
 @Controller('phong')
 export class PhongController {
@@ -74,12 +76,35 @@ export class PhongController {
     return this.phongService.findRoomPage(+pageIndex, +pageSize, keyword)
   }
 
+  // @HttpCode(200)
+  // @UseInterceptors(FileInterceptor("file", upload))
+  // @Post('upload-img-room/:id')
+  // uploadImgRoom(@Headers('token') token: string, @Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
+  //   try {
+  //     return this.phongService.uploadImgRoom(token, +id, file)
+  //   } catch (exception) {
+  //     throw new HttpException(exception.response, exception.status)
+  //   }
+  // }
+
+  // @HttpCode(200)
+  // @UseInterceptors(FileInterceptor("file", upload))
+  // @Post('upload-img-room/:id')
+  // uploadImgRoom(@Headers('token') token: string, @Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
+  //   try {
+  //     return this.phongService.uploadImgRoom(token, +id, file)
+  //   } catch (exception) {
+  //     throw new HttpException(exception.response, exception.status)
+  //   }
+  // }
+
   @HttpCode(200)
   @UseInterceptors(FileInterceptor("file", upload))
   @Post('upload-img-room/:id')
-  uploadImgRoom(@Headers('token') token: string, @Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
+  async uploadImgRoom(@Headers('token') token: string, @Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
     try {
-      return this.phongService.uploadImgRoom(token, +id, file)
+      const image = await compressImage(file, "/public/imgRoom/")
+      return this.phongService.uploadImgRoom(token, +id, image)
     } catch (exception) {
       throw new HttpException(exception.response, exception.status)
     }

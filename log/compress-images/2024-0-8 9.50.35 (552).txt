@@ -1,0 +1,8 @@
+File from: [D:\hoc backend\nojs37_airbnb/public/img/1704682235523_006Boco0gy1hj4biptp1pj30o01hc0xu.jpg]
+
+File to: [[object Object]1704682235523_006Boco0gy1hj4biptp1pj30o01hc0xu.jpg]
+
+Compression algorithm: [mozjpeg]
+
+Description: Error: Command failed: D:\hoc backend\nojs37_airbnb\node_modules\mozjpeg\vendor\cjpeg.exe -quality 10 -outfile [object Object]1704682235523_006Boco0gy1hj4biptp1pj30o01hc0xu.jpg D:\hoc backend\nojs37_airbnb/public/img/1704682235523_006Boco0gy1hj4biptp1pj30o01hc0xu.jpg
+D:\hoc backend\nojs37_airbnb\node_modules\mozjpeg\vendor\cjpeg.exe: can't open [object Object]1704682235523_006Boco0gy1hj4biptp1pj30o01hc0xu.jpg

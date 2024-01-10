@@ -6,6 +6,7 @@ import upload from "../config/UploadImg"
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { nguoi_dung } from '@prisma/client';
+import { compressImage } from 'src/config/compressImage';
 
 @Controller('users')
 export class NguoiDungController {
@@ -32,9 +33,10 @@ export class NguoiDungController {
   @HttpCode(200)
   @UseInterceptors(FileInterceptor("file", upload))
   @Post('/upload-avatar')
-  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Headers('token') token: string) {
+  async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Headers('token') token: string) {
     try {
-      return this.nguoiDungService.uploadAvatar(token, file)
+      const image = await compressImage(file, "/public/imgAvatar/")
+      return this.nguoiDungService.uploadAvatar(token, image)
     } catch (exception) {
       throw new HttpException(exception.response, exception.status)
     }

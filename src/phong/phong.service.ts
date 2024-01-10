@@ -2,14 +2,16 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaClient, phong } from '@prisma/client';
 import { phong_dto } from './dto/phong.dto';
-import { compressImage } from 'src/config/compressImage';
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import { initializeApp } from "firebase/app";
+import config from '../config/firebase.config'
+import * as fs from "fs";
 
 
 @Injectable()
 export class PhongService {
     constructor(private JwtService: JwtService) { }
     prisma = new PrismaClient()
-
 
     async findAllRoom(): Promise<phong[]> {
         let data = await this.prisma.phong.findMany()
@@ -121,9 +123,55 @@ export class PhongService {
         return deleteR
     }
 
+    // up ảnh lên folder imgRoom trong máy
+    // async uploadImgRoom(token: string, id: number, file: Express.Multer.File) {
+    //     const decodeToken = await this.JwtService.decode(token)
+    //     const checkUser = await this.prisma.nguoi_dung.findFirst({
+    //         where: {
+    //             id: decodeToken.data.id
+    //         }
+    //     })
+    //     if (checkUser.role === "USER") {
+    //         throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
+    //     }
+    //     const checkRoom = await this.prisma.phong.findFirst({
+    //         where: {
+    //             id
+    //         }
+    //     })
+    //     if (!checkRoom) {
+    //         throw new HttpException("Phòng không tồn tại !!!", HttpStatus.UNAUTHORIZED)
+    //     }
+    //     let uploadImg = await this.prisma.phong.update({
+    //         where: {
+    //             id
+    //         }, data: {
+    //             hinh_anh: imgRoom.filename
+    //         }
+    //     })
+    //     return uploadImg
+    // }
+
+
+    // up ảnh lên firebase
     async uploadImgRoom(token: string, id: number, file: Express.Multer.File) {
         const decodeToken = await this.JwtService.decode(token)
-        const imgRoom = await compressImage(file, "/public/imgRoom/")
+        const buffer = fs.readFileSync(file.path)
+        const app = initializeApp(config.firebaseConfig);
+        const storage = getStorage(app, app.options.storageBucket);
+        const storageRef = ref(storage, `imgRoom/${file.filename}`)
+        const metadata = {
+            contentType: file.mimetype,
+        };
+        const snapshot = await uploadBytesResumable(storageRef, buffer.buffer, metadata);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        if (!downloadURL) {
+            throw new HttpException('Lỗi ... ', HttpStatus.BAD_REQUEST)
+        }
+        const imgUnOptimized = process.cwd() + "/public/imgRoom/" + file.filename;
+        fs.unlink(imgUnOptimized, (error) => {
+            console.log(error)
+        })
         const checkUser = await this.prisma.nguoi_dung.findFirst({
             where: {
                 id: decodeToken.data.id
@@ -144,9 +192,10 @@ export class PhongService {
             where: {
                 id
             }, data: {
-                hinh_anh: imgRoom.filename
+                hinh_anh: downloadURL
             }
         })
         return uploadImg
     }
+
 }

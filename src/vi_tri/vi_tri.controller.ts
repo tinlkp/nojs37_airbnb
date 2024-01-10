@@ -5,6 +5,7 @@ import { vi_tri_dto } from './dto/vi_tri.dto';
 import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import upload from 'src/config/UploadImg';
+import { compressImage } from 'src/config/compressImage';
 
 @Controller('vi-tri')
 export class ViTriController {
@@ -65,9 +66,10 @@ export class ViTriController {
   @HttpCode(200)
   @UseInterceptors(FileInterceptor("file", upload))
   @Post('upload-img-location/:idViTri')
-  uploadHinhViTri(@Param('idViTri') id: number, @UploadedFile() file: Express.Multer.File, @Headers('token') token: string) {
+  async uploadHinhViTri(@Param('idViTri') id: number, @UploadedFile() file: Express.Multer.File, @Headers('token') token: string) {
     try {
-      return this.viTriService.uploadHinhViTri(+id, file, token)
+      const image = await compressImage(file, "/public/imgLocation/")
+      return this.viTriService.uploadHinhViTri(+id, image, token)
     } catch (exception) {
       throw new HttpException(exception.response, exception.status)
     }
