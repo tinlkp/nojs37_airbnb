@@ -6,7 +6,11 @@ import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import upload from 'src/config/UploadImg';
 import { compressImage } from 'src/config/compressImage';
+import { ApiBody, ApiConsumes, ApiHeader, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { vi_tri_create } from './entities/vi_tri.entity';
+import { FileUploadDto } from 'src/config/Upload.dto';
 
+@ApiTags('Vị Trí')
 @Controller('vi-tri')
 export class ViTriController {
   constructor(private readonly viTriService: ViTriService) { }
@@ -23,11 +27,17 @@ export class ViTriController {
     return this.viTriService.locationDetail(+id)
   }
 
+
+  @ApiHeader({
+    name: 'token'
+  })
+  @ApiBody({
+    type: vi_tri_create
+  })
   @HttpCode(200)
   @Post('/create-location')
-  createLocation(@Body() data: vi_tri_dto, @Req() req: Request) {
+  createLocation(@Body() data: vi_tri_dto, @Headers('token') token: string) {
     try {
-      let token = req.headers.token
       return this.viTriService.createLocation(data, token)
     } catch (exception) {
       throw new HttpException(exception.response, exception.status)
@@ -57,14 +67,23 @@ export class ViTriController {
   // pageIndex là số trang, 
   // pageSize là số vị trí trong 1 trang, 
   // keyword là tên vị trí
+  @ApiQuery({
+    name: "keyword",
+    required: false
+  })
   @HttpCode(200)
   @Get('get-location-page')
   findLocationPage(@Query("pageIndex") pageIndex: number, @Query("pageSize") pageSize: number, @Query("keyword") keyword: string) {
     return this.viTriService.findLocationPage(+pageIndex, +pageSize, keyword)
   }
 
+
   @HttpCode(200)
+  @ApiBody({
+    type: FileUploadDto
+  })
   @UseInterceptors(FileInterceptor("file", upload))
+  @ApiConsumes('multipart/form-data')
   @Post('upload-img-location/:idViTri')
   async uploadHinhViTri(@Param('idViTri') id: number, @UploadedFile() file: Express.Multer.File, @Headers('token') token: string) {
     try {

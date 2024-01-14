@@ -7,7 +7,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { nguoi_dung } from '@prisma/client';
 import { compressImage } from 'src/config/compressImage';
+import { ApiBody, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { update_nguoi_dung } from './dto/update-nguoi_dung.dto';
+import { FileUploadDto } from 'src/config/Upload.dto';
 
+
+@ApiTags('Người dùng')
 @Controller('users')
 export class NguoiDungController {
   constructor(private readonly nguoiDungService: NguoiDungService, private jwtService: JwtService) { }
@@ -19,11 +24,19 @@ export class NguoiDungController {
     return this.nguoiDungService.findAll();
   }
 
-  @Get('/search/:TenNguoiDung')
-  findName(@Param('name') name: string): Promise<nguoi_dung[]> {
-    return this.nguoiDungService.findName(name);
+  @ApiBody({
+    type: create_nguoi_dung
+  })
+  @HttpCode(200)
+  // tạo người dùng
+  @Post('/create-user')
+  createUser(@Body() createUser: create_nguoi_dung) {
+    try {
+      return this.nguoiDungService.createUser(createUser)
+    } catch (exception) {
+      throw new HttpException(exception.response, exception.status)
+    }
   }
-
   @HttpCode(200)
   @Get('/get-user-detail/:id')
   detailUser(@Param('id') id: number): Promise<nguoi_dung> {
@@ -31,7 +44,18 @@ export class NguoiDungController {
   }
 
   @HttpCode(200)
+  @Get('/search-name/:TenNguoiDung')
+  findName(@Param('TenNguoiDung') name: string) {
+    return this.nguoiDungService.findName(name);
+  }
+
+
+  @HttpCode(200)
+  @ApiBody({
+    type: FileUploadDto
+  })
   @UseInterceptors(FileInterceptor("file", upload))
+  @ApiConsumes('multipart/form-data')
   @Post('/upload-avatar')
   async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Headers('token') token: string) {
     try {
@@ -43,19 +67,12 @@ export class NguoiDungController {
 
   }
 
-  @HttpCode(200)
-  @Post('/create-user')
-  createUser(@Body() createUser: nguoi_dung) {
-    try {
-      return this.nguoiDungService.createUser(createUser)
-    } catch (exception) {
-      throw new HttpException(exception.response, exception.status)
-    }
-  }
-
+  @ApiBody({
+    type: update_nguoi_dung
+  })
   @HttpCode(200)
   @Put('/update-user/:id')
-  updateUser(@Param('id') id: number, @Body() dataUser: nguoi_dung) {
+  updateUser(@Param('id') id: number, @Body() dataUser: update_nguoi_dung) {
     try {
       return this.nguoiDungService.updateUser(+id, dataUser)
     } catch (exception) {
@@ -66,6 +83,10 @@ export class NguoiDungController {
   // pageIndex là số trang,
   // pageSize là số người dùng trong 1 trang, 
   // keyword là tên của người dùng
+  @ApiQuery({
+    name: "keyword",
+    required: false
+  })
   @HttpCode(200)
   @Get('/get-page-user')
   getUserPage(@Query("pageIndex") pageIndex: number, @Query("pageSize") pageSize: number, @Query("keyword") keyword: string) {

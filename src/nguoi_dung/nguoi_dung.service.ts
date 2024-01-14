@@ -7,6 +7,7 @@ import * as fs from 'fs'
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import { initializeApp } from "firebase/app";
 import config from '../config/firebase.config'
+import { update_nguoi_dung } from './dto/update-nguoi_dung.dto';
 
 @Injectable()
 export class NguoiDungService {
@@ -18,11 +19,11 @@ export class NguoiDungService {
     return data;
   }
 
-  async findName(name: string): Promise<nguoi_dung[]> {
+  async findName(name: string) {
     let data = await this.prisma.nguoi_dung.findMany({
       where: {
         name: {
-          contains: name,
+          contains: name
         }
       }
     })
@@ -83,7 +84,7 @@ export class NguoiDungService {
   }
 
 
-  async createUser(createUser: nguoi_dung) {
+  async createUser(createUser: create_nguoi_dung) {
     let checkEmail = await this.prisma.nguoi_dung.findFirst({
       where: {
         email: createUser.email
@@ -110,7 +111,7 @@ export class NguoiDungService {
   }
 
 
-  async updateUser(id: number, dataUser: nguoi_dung) {
+  async updateUser(id: number, dataUser: update_nguoi_dung) {
     let checkUser = await this.prisma.nguoi_dung.findMany({
       where: {
         id
@@ -143,6 +144,7 @@ export class NguoiDungService {
       take: pageSize,
       skip: pageIndex - 1
     })
+
     return result
   }
 

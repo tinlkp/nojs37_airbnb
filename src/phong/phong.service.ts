@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaClient, phong } from '@prisma/client';
 import { phong_dto } from './dto/phong.dto';
-import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import { deleteObject, getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import { initializeApp } from "firebase/app";
 import config from '../config/firebase.config'
 import * as fs from "fs";
@@ -28,14 +28,14 @@ export class PhongService {
         if (checkUser.role === "USER") {
             throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
         }
-        // let { ten_phong, khach, phong_ngu, giuong, phong_tam, mo_ta, gia_tien, may_giat, ban_la, tivi, dieu_hoa, wifi, bep, do_xe, ho_boi, ban_ui } = data
+        // let { ten_phong, khach, phong_gu, giuong, phong_tam, mo_ta, gia_tien, may_giat, ban_la, tivi, dieu_hoa, wifi, bep, do_xe, ho_boi, ban_ui } = data
 
         let newData = this.prisma.phong.create({ data: data })
         return newData
     }
 
     async findRoomByLocation(idViTri: number) {
-        let data = await this.prisma.phong.findFirst({
+        let data = await this.prisma.phong.findMany({
             where: {
                 ma_vi_tri: idViTri
             }
@@ -156,9 +156,17 @@ export class PhongService {
     // up ảnh lên firebase
     async uploadImgRoom(token: string, id: number, file: Express.Multer.File) {
         const decodeToken = await this.JwtService.decode(token)
-        const buffer = fs.readFileSync(file.path)
         const app = initializeApp(config.firebaseConfig);
         const storage = getStorage(app, app.options.storageBucket);
+        const checkUser = await this.prisma.nguoi_dung.findFirst({
+            where: {
+                id: decodeToken.data.id
+            }
+        })
+        if (checkUser.role === "USER") {
+            throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
+        }
+        const buffer = fs.readFileSync(file.path)
         const storageRef = ref(storage, `imgRoom/${file.filename}`)
         const metadata = {
             contentType: file.mimetype,
@@ -172,14 +180,7 @@ export class PhongService {
         fs.unlink(imgUnOptimized, (error) => {
             console.log(error)
         })
-        const checkUser = await this.prisma.nguoi_dung.findFirst({
-            where: {
-                id: decodeToken.data.id
-            }
-        })
-        if (checkUser.role === "USER") {
-            throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
-        }
+
         const checkRoom = await this.prisma.phong.findFirst({
             where: {
                 id

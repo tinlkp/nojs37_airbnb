@@ -1,13 +1,23 @@
+import { ApiProperty } from "@nestjs/swagger"
+
 export class CreateNguoiDungDto { }
 
 
-export type create_nguoi_dung = {
-    id: number,
-    name: string,
-    email: string,
-    pass_word: string,
-    phone: string,
-    birth_day: string,
-    gender: string,
-    role: string,
+export class create_nguoi_dung {
+    @ApiProperty()
+    id: number
+    @ApiProperty()
+    name: string
+    @ApiProperty()
+    email: string
+    @ApiProperty()
+    pass_word: string
+    @ApiProperty()
+    phone: string
+    @ApiProperty()
+    birth_day: string
+    @ApiProperty()
+    gender: string
+    @ApiProperty()
+    role: string
 }

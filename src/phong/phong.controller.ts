@@ -4,9 +4,12 @@ import { phong } from '@prisma/client';
 import { phong_dto } from './dto/phong.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import upload from 'src/config/UploadImg';
-import { diskStorage } from 'multer';
 import { compressImage } from 'src/config/compressImage';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { phong_create } from './entities/phong.entity';
+import { FileUploadDto } from 'src/config/Upload.dto';
 
+@ApiTags('Phòng')
 @Controller('phong')
 export class PhongController {
   constructor(private readonly phongService: PhongService) { }
@@ -28,6 +31,9 @@ export class PhongController {
   }
 
   @HttpCode(200)
+  @ApiBody({
+    type: phong_create
+  })
   @Post('create-room')
   createRoom(@Headers('token') token: string, @Body() data: phong_dto) {
     try {
@@ -48,6 +54,9 @@ export class PhongController {
   }
 
   @HttpCode(200)
+  @ApiBody({
+    type: phong_create
+  })
   @Put('update-room/:id')
   updateRoom(@Headers('token') token: string, @Param("id") id: number, @Body() data: phong_dto) {
     try {
@@ -76,16 +85,6 @@ export class PhongController {
     return this.phongService.findRoomPage(+pageIndex, +pageSize, keyword)
   }
 
-  // @HttpCode(200)
-  // @UseInterceptors(FileInterceptor("file", upload))
-  // @Post('upload-img-room/:id')
-  // uploadImgRoom(@Headers('token') token: string, @Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
-  //   try {
-  //     return this.phongService.uploadImgRoom(token, +id, file)
-  //   } catch (exception) {
-  //     throw new HttpException(exception.response, exception.status)
-  //   }
-  // }
 
   // @HttpCode(200)
   // @UseInterceptors(FileInterceptor("file", upload))
@@ -99,7 +98,11 @@ export class PhongController {
   // }
 
   @HttpCode(200)
+  @ApiBody({
+    type: FileUploadDto
+  })
   @UseInterceptors(FileInterceptor("file", upload))
+  @ApiConsumes('multipart/form-data')
   @Post('upload-img-room/:id')
   async uploadImgRoom(@Headers('token') token: string, @Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
     try {

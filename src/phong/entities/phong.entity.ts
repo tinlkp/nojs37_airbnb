@@ -1,23 +1,39 @@
+import { ApiProperty } from "@nestjs/swagger"
 
 
-export type phong = {
-    id: number,
-    tenPhong: string,
-    khach: number,
-    phongNgu: number,
-    giuong: number,
-    phongTam: number,
-    moTa: string,
-    giaTien: number,
-    mayGiat: boolean,
-    banLa: boolean,
-    tivi: boolean,
-    dieuHoa: boolean,
-    wifi: boolean,
-    bep: boolean,
-    doXe: boolean,
-    hoBoi: boolean,
-    banUi: boolean,
-    maViTri: number,
-    hinhAnh: string
+export class phong_create {
+    @ApiProperty()
+    ten_phong: string
+    @ApiProperty()
+    khach: number
+    @ApiProperty()
+    phong_ngu: number
+    @ApiProperty()
+    giuong: number
+    @ApiProperty()
+    phong_tam: number
+    @ApiProperty()
+    mo_ta: string
+    @ApiProperty()
+    gia_tien: number
+    @ApiProperty()
+    may_giat: boolean
+    @ApiProperty()
+    ban_la: boolean
+    @ApiProperty()
+    tivi: boolean
+    @ApiProperty()
+    dieu_hoa: boolean
+    @ApiProperty()
+    wifi: boolean
+    @ApiProperty()
+    bep: boolean
+    @ApiProperty()
+    do_xe: boolean
+    @ApiProperty()
+    ho_boi: boolean
+    @ApiProperty()
+    ban_ui: boolean
+    @ApiProperty()
+    ma_vi_tri: number
 }

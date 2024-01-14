@@ -2,7 +2,10 @@ import { Body, Controller, Delete, Get, Headers, HttpCode, HttpException, Param,
 import { BinhLuanService } from './binh_luan.service';
 import { binh_luan } from '@prisma/client';
 import { binh_luan_entity } from './entities/binh_luan.entity';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { binh_luan_dto } from './dto/binh_luan.dto';
 
+@ApiTags('Bình luận')
 @Controller('binh-luan')
 export class BinhLuanController {
   constructor(private readonly binhLuanService: BinhLuanService) { }
@@ -14,6 +17,9 @@ export class BinhLuanController {
   }
 
   @HttpCode(200)
+  @ApiBody({
+    type: binh_luan_dto
+  })
   @Post('post-comment')
   postComment(@Headers('token') token: string, @Body() data: binh_luan_entity) {
     try {
@@ -24,6 +30,9 @@ export class BinhLuanController {
   }
 
   @HttpCode(200)
+  @ApiBody({
+    type: binh_luan_dto
+  })
   @Put('update-comment/:id')
   updateComment(@Headers('token') token: string, @Param('id') id: number, @Body() data: binh_luan_entity) {
     try {

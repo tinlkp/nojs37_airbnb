@@ -68,7 +68,7 @@ export class DatPhongService {
     }
 
     async findBookRoomByIdUser(idUser: number) {
-        let checkBookRoom = await this.prisma.dat_phong.findFirst({
+        let checkBookRoom = await this.prisma.dat_phong.findMany({
             where: {
                 ma_nguoi_dat: idUser
             }
@@ -76,7 +76,7 @@ export class DatPhongService {
         if (!checkBookRoom) {
             throw new HttpException('Số phòng không đúng !!!', HttpStatus.UNAUTHORIZED)
         }
-        let data = await this.prisma.dat_phong.findFirst({
+        let data = await this.prisma.dat_phong.findMany({
             where: {
                 ma_nguoi_dat: idUser
             }

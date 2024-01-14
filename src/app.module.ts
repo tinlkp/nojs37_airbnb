@@ -12,7 +12,7 @@ import { DatPhongModule } from './dat_phong/dat_phong.module';
 
 
 @Module({
-  imports: [NguoiDungModule, AuthModule, ConfigModule.forRoot({ isGlobal: true }), ViTriModule, PhongModule, BinhLuanModule, DatPhongModule],
+  imports: [AuthModule, NguoiDungModule, ConfigModule.forRoot({ isGlobal: true }), ViTriModule, PhongModule, BinhLuanModule, DatPhongModule],
   controllers: [AppController],
   providers: [AppService, JwtStrategy],
 })

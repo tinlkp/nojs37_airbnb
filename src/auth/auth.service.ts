@@ -38,7 +38,7 @@ export class AuthService {
     }
 
 
-    async signin(LoginUser: signin): Promise<any> {
+    async signin(LoginUser: signin) {
         const checkEmailUser = await this.prisma.nguoi_dung.findFirst({
             where: {
                 email: LoginUser.email
@@ -51,7 +51,7 @@ export class AuthService {
         if (!checkPasswordUser) {
             throw new HttpException("Password không đúng", HttpStatus.UNAUTHORIZED)
         }
-        let token = this.JwtService.signAsync({
+        const token = await this.JwtService.signAsync({
             data: {
                 id: checkEmailUser.id
             }
@@ -59,8 +59,11 @@ export class AuthService {
             expiresIn: "1d",
             secret: "BI_MAT",
         })
-
-
-        return token
+        const user = checkEmailUser
+        const result = {
+            user,
+            token
+        }
+        return result
     }
 }

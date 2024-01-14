@@ -1,14 +1,12 @@
+import { ApiProperty } from "@nestjs/swagger"
 
 
 
-export type vi_tri = {
-    id: number,
-    ten_vi_tri: string,
-    tinh_thanh: string,
-    quoc_gia: string,
-    hinh_anh: string,
-}
-
-export type hinh_anh={
-    
+export class vi_tri_create {
+    @ApiProperty()
+    ten_vi_tri: string
+    @ApiProperty()
+    tinh_thanh: string
+    @ApiProperty()
+    quoc_gia: string
 }

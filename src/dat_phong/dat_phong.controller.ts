@@ -1,7 +1,10 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpException, Param, Post, Put } from '@nestjs/common';
 import { DatPhongService } from './dat_phong.service';
 import { dat_phong } from '@prisma/client';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { create_book_room } from './dto/dat_phong.dto';
 
+@ApiTags('Đặt phòng')
 @Controller('dat-phong')
 export class DatPhongController {
   constructor(private readonly datPhongService: DatPhongService) { }
@@ -14,6 +17,9 @@ export class DatPhongController {
   }
 
   @HttpCode(200)
+  @ApiBody({
+    type: create_book_room
+  })
   @Post('post-book-room')
   postBookRoom(@Body() data: dat_phong) {
     try {
@@ -34,6 +40,9 @@ export class DatPhongController {
   }
 
   @HttpCode(200)
+  @ApiBody({
+    type: create_book_room
+  })
   @Put('update-book-room/:id')
   updateBookRoom(@Param('id') id: number, @Body() data: dat_phong) {
     try {
@@ -54,6 +63,9 @@ export class DatPhongController {
   }
 
   @HttpCode(200)
+  @ApiParam({
+    name: "idUser"
+  })
   @Get('book-room-by-id/:idUser')
   findBookRoomByIdUser(@Param('idUser') idUser: number) {
     try {
