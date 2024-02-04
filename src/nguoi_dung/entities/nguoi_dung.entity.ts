@@ -1,17 +1,7 @@
 export class NguoiDung {
 }
 
-export type nguoi_dung = {
-    id: number,
-    name: string,
-    email: string,
-    pass_word: string,
-    phone: string,
-    birth_day: string,
-    gender: string,
-    role: string,
-    avatar: null,
-}
+
 export type nguoi_dung_id = {
     id: number,
     name: string,

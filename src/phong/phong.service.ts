@@ -13,27 +13,31 @@ export class PhongService {
     constructor(private JwtService: JwtService) { }
     prisma = new PrismaClient()
 
+    // tìm danh sách phòng
     async findAllRoom(): Promise<phong[]> {
         let data = await this.prisma.phong.findMany()
         return data
     }
 
+    // tạo phòng
     async createRoom(token: string, data: phong_dto) {
         const decodeToken = await this.JwtService.decode(token)
+        // kiểm tra quyền người dùng
         const checkUser = await this.prisma.nguoi_dung.findFirst({
             where: {
                 id: decodeToken.data.id
             }
         })
+        // nếu người dùng là user 
         if (checkUser.role === "USER") {
             throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
         }
-        // let { ten_phong, khach, phong_gu, giuong, phong_tam, mo_ta, gia_tien, may_giat, ban_la, tivi, dieu_hoa, wifi, bep, do_xe, ho_boi, ban_ui } = data
 
         let newData = this.prisma.phong.create({ data: data })
         return newData
     }
 
+    // tìm phòng theo id vị trí
     async findRoomByLocation(idViTri: number) {
         let data = await this.prisma.phong.findMany({
             where: {
@@ -46,19 +50,31 @@ export class PhongService {
         return data
     }
 
+    // tìm phòng theo trang
     async findRoomPage(pageIndex: number, pageSize: number, keyword: string) {
-        const result = await this.prisma.phong.findMany({
-            where: {
-                ten_phong: {
-                    contains: keyword
-                }
-            },
-            take: pageSize,
-            skip: pageIndex - 1
-        })
-        return result
+        // nếu keyword tồn tại
+        if (keyword) {
+            const result = await this.prisma.phong.findMany({
+                where: {
+                    ten_phong: {
+                        contains: keyword
+                    }
+                },
+                take: pageSize,
+                skip: pageIndex - 1
+            })
+            return result
+        } else {
+            // nếu keyword không tồn tại
+            const result = await this.prisma.phong.findMany({
+                take: pageSize,
+                skip: pageIndex - 1
+            })
+            return result
+        }
     }
 
+    // tìm phòng theo id phòng
     async roomDetail(id: number) {
         let roomDetail = await this.prisma.phong.findFirst({
             where: {
@@ -71,16 +87,20 @@ export class PhongService {
         return roomDetail
     }
 
+    // cập nhật phòng
     async updateRoom(token: string, id: number, dataRoom: phong_dto) {
         const decodeToken = await this.JwtService.decode(token)
+        // kiểm tra quyền người dùng
         const checkUser = await this.prisma.nguoi_dung.findFirst({
             where: {
                 id: decodeToken.data.id
             }
         })
+        // nếu người dùng là user
         if (checkUser.role === "USER") {
             throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
         }
+        // kiểm tra phòng
         let checkRoom = await this.prisma.phong.findFirst({
             where: {
                 id
@@ -97,16 +117,20 @@ export class PhongService {
         return newData
     }
 
+    // xóa phòng
     async deleteRoom(token: string, id: number) {
         const decodeToken = await this.JwtService.decode(token)
+        // kiểm tra quyền người dùng
         const checkUser = await this.prisma.nguoi_dung.findFirst({
             where: {
                 id: decodeToken.data.id
             }
         })
+        // nếu người dùng là user
         if (checkUser.role === "USER") {
             throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
         }
+        // kiểm tra phòng
         let checkRoom = await this.prisma.phong.findFirst({
             where: {
                 id
@@ -156,8 +180,7 @@ export class PhongService {
     // up ảnh lên firebase
     async uploadImgRoom(token: string, id: number, file: Express.Multer.File) {
         const decodeToken = await this.JwtService.decode(token)
-        const app = initializeApp(config.firebaseConfig);
-        const storage = getStorage(app, app.options.storageBucket);
+        // check quyền người dùng
         const checkUser = await this.prisma.nguoi_dung.findFirst({
             where: {
                 id: decodeToken.data.id
@@ -166,6 +189,10 @@ export class PhongService {
         if (checkUser.role === "USER") {
             throw new HttpException("Quyền hạn không đủ !!!", HttpStatus.BAD_REQUEST)
         }
+        // setup firebase
+        const app = initializeApp(config.firebaseConfig);
+        const storage = getStorage(app, app.options.storageBucket);
+        // đọc file
         const buffer = fs.readFileSync(file.path)
         const storageRef = ref(storage, `imgRoom/${file.filename}`)
         const metadata = {
@@ -173,14 +200,16 @@ export class PhongService {
         };
         const snapshot = await uploadBytesResumable(storageRef, buffer.buffer, metadata);
         const downloadURL = await getDownloadURL(snapshot.ref);
+        // nếu có lỗi gì thì báo lỗi
         if (!downloadURL) {
             throw new HttpException('Lỗi ... ', HttpStatus.BAD_REQUEST)
         }
+        // xóa đi hình đã lưu trong máy
         const imgUnOptimized = process.cwd() + "/public/imgRoom/" + file.filename;
         fs.unlink(imgUnOptimized, (error) => {
             console.log(error)
         })
-
+        // kiểm tra phòng
         const checkRoom = await this.prisma.phong.findFirst({
             where: {
                 id

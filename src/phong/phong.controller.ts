@@ -5,7 +5,7 @@ import { phong_dto } from './dto/phong.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import upload from 'src/config/UploadImg';
 import { compressImage } from 'src/config/compressImage';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { phong_create } from './entities/phong.entity';
 import { FileUploadDto } from 'src/config/Upload.dto';
 
@@ -79,6 +79,10 @@ export class PhongController {
   // pageIndex là số trang, 
   // pageSize là số phòng trong 1 trang,
   // keyword là tên của phòng
+  @ApiQuery({
+    name: "keyword",
+    required: false
+  })
   @HttpCode(200)
   @Get('get-room-page')
   findRoomPage(@Query("pageIndex") pageIndex: number, @Query("pageSize") pageSize: number, @Query("keyword") keyword: string) {

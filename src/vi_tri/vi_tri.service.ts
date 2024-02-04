@@ -12,13 +12,13 @@ export class ViTriService {
     constructor(private JwtService: JwtService) { }
     prisma = new PrismaClient()
 
-
-
+    // danh sách bình luận
     async findAll(): Promise<vi_tri[]> {
         let data = await this.prisma.vi_tri.findMany()
         return data
     }
 
+    // tạo vị trí
     async createLocation(data: vi_tri_dto, token: any) {
         const decodeToken = await this.JwtService.decode(token)
         const checkUser = await this.prisma.nguoi_dung.findFirst({
@@ -40,19 +40,31 @@ export class ViTriService {
         return newData
     }
 
+    // tìm vị trí theo trang
     async findLocationPage(pageIndex: number, pageSize: number, keyword: string) {
-        const result = await this.prisma.vi_tri.findMany({
-            where: {
-                ten_vi_tri: {
-                    contains: keyword
-                }
-            },
-            take: pageSize,
-            skip: pageIndex - 1
-        })
-        return result
+        if (keyword) {
+            const result = await this.prisma.vi_tri.findMany({
+                where: {
+                    ten_vi_tri: {
+                        contains: keyword
+                    }
+                },
+                take: pageSize,
+                skip: pageIndex - 1
+            })
+            return result
+        } else {
+            const result = await this.prisma.vi_tri.findMany({
+
+                take: pageSize,
+                skip: pageIndex - 1
+            })
+            return result
+        }
+
     }
 
+    // chi tiết vị trí
     async locationDetail(id: number): Promise<vi_tri> {
         let detail = await this.prisma.vi_tri.findFirst({
             where: {
@@ -62,6 +74,7 @@ export class ViTriService {
         return detail
     }
 
+    // cập nhật vị trí
     async updateLocation(id: number, token: string, data: vi_tri_dto) {
         const decodeToken = await this.JwtService.decode(token)
         const checkUser = await this.prisma.nguoi_dung.findFirst({
@@ -89,6 +102,7 @@ export class ViTriService {
 
     }
 
+    // xóa vị trí
     async deleteLocation(id: number, token: string) {
         const decodeToken = await this.JwtService.decode(token)
         const checkUser = await this.prisma.nguoi_dung.findFirst({

@@ -8,11 +8,13 @@ export class BinhLuanService {
     constructor(private JwtService: JwtService) { }
     prisma = new PrismaClient()
 
+    // danh sách bình luận
     async findAllComment(): Promise<binh_luan[]> {
         let data = await this.prisma.binh_luan.findMany()
         return data
     }
 
+    // tạo bình luận
     async postComment(token: string, data: binh_luan_entity) {
         const decodeToken = await this.JwtService.decode(token)
         let { ma_phong, noi_dung, sao_binh_luan } = data
@@ -27,7 +29,7 @@ export class BinhLuanService {
         })
         return comment
     }
-
+    // cập nhật bình luận
     async updateComment(token: string, id: number, data: binh_luan_entity) {
         const decodeToken = await this.JwtService.decode(token)
         let checkComment = await this.prisma.binh_luan.findFirst({
@@ -60,7 +62,7 @@ export class BinhLuanService {
         })
         return newComment
     }
-
+    // xóa bình luận
     async deleteComment(token: string, id: number) {
         const decodeToken = await this.JwtService.decode(token)
 
@@ -88,11 +90,14 @@ export class BinhLuanService {
         })
         return delComment
     }
-
+    // tìm bình luận theo mã phòng
     async searchCommentByRoomId(roomId: number): Promise<binh_luan[]> {
         let data = await this.prisma.binh_luan.findMany({
             where: {
                 ma_phong: roomId
+            },
+            include: {
+                nguoi_dung: true
             }
         })
         return data

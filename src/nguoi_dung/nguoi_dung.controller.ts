@@ -1,9 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, Req, Put, HttpCode, HttpException, Query, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseInterceptors, UploadedFile, Put, HttpCode, HttpException, Query, Headers } from '@nestjs/common';
 import { NguoiDungService } from './nguoi_dung.service';
 import { create_nguoi_dung } from './dto/create-nguoi_dung.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import upload from "../config/UploadImg"
-import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { nguoi_dung } from '@prisma/client';
 import { compressImage } from 'src/config/compressImage';
@@ -12,12 +11,13 @@ import { update_nguoi_dung } from './dto/update-nguoi_dung.dto';
 import { FileUploadDto } from 'src/config/Upload.dto';
 
 
+
 @ApiTags('Người dùng')
 @Controller('users')
 export class NguoiDungController {
   constructor(private readonly nguoiDungService: NguoiDungService, private jwtService: JwtService) { }
 
-  // @UseGuards(AuthGuard("jwt"))
+
   @Get()
   // danh sách người dùng
   findAll(): Promise<create_nguoi_dung[]> {

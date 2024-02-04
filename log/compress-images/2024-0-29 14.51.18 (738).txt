@@ -1,0 +1,8 @@
+File from: [D:\hoc backend\nojs37_airbnb/public/img/1706514678539_img-room-1.jpg]
+
+File to: [D:\hoc backend\nojs37_airbnb/public/imgRoom/1706514678539_img-room-1.jpg]
+
+Compression algorithm: [mozjpeg]
+
+Description: Error: Command failed: D:\hoc backend\nojs37_airbnb\node_modules\mozjpeg\vendor\cjpeg.exe -quality 20 -outfile D:\hoc backend\nojs37_airbnb/public/imgRoom/1706514678539_img-room-1.jpg D:\hoc backend\nojs37_airbnb/public/img/1706514678539_img-room-1.jpg
+Unrecognized input file format --- perhaps you need -targa
